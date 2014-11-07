@@ -1,7 +1,6 @@
 rm(list = ls())
 
-setwd("C:\\Users\\JIN\\Dropbox\\Research\\Monitoring\\code")
-#setwd("C:\\Users\\jyfea_000\\Dropbox\\Research\\Monitoring\\code")
+setwd("C:/Users/JIN/Documents/GitHub/LASSO-BN")
 
 library(bnlearn)
 library(Rgraphviz)
@@ -17,7 +16,7 @@ bn.struct = model2network("[F1][F2][F3][F4][F19][F10|F1:F2:F3:F4][J20|F10][F5|J2
 graphviz.plot(bn.struct)
 
 # Estimate the Bayesian network parameters
-inputMat <- read.table("./data/RealExample/incontrol.csv", header = T)
+inputMat <- read.table("./data/TEP/incontrol.csv", header = T)
 inputMat <- as.data.frame(scale(inputMat))
 nodeName <- colnames(inputMat)
 nodeSymb <- c("F1", "F2", "F3", "F4", "F5", "F6",
@@ -47,18 +46,23 @@ for (i in 1:numNode) {
 }
 omega[is.na(omega)] <- 0
 W <- solve(diag(numNode) - omega) # causal effect matrix
-save(W, file = "./data/RealExample/weighM")
+save(W, file = "./data/TEP/weighM")
+
+# shift positions
+shifts <- rep(0, numNode)
+shifts.pos <- sample(1:numNode, 3) # 3 shifts
+save(shifts.pos, file = "./data/TEP/dat/shifts") 
 
 # Step 2
 sig.set <- c(0.1, 0.3, 0.5, 0.7, 0.9, 1.5)
 for (i in 1:length(sig.set)) {
-  l.mu <- c(sig.set[i], rep(0, numNode-1)) # the 1st node has mean shift 1
-  l.sigma <- diag(numNode) # identitiy covariance matrix
+  shifts[shifts.pos] <- sig.set[i]
+  shifts.sigma <- diag(numNode) # identitiy covariance matrix
   numSample <- 10000 # sample size
-  l.sample <- mvrnorm(n = numSample, mu = l.mu, Sigma = l.sigma)
+  shifts.sample <- mvrnorm(n = numSample, mu = shifts, Sigma = shifts.sigma)
   
   # Step 3
-  e.sample <- W %*% t(l.sample)
-  e.sample <- t(e.sample)
-  write.csv(e.sample, file = paste("./data/RealExample/dat",sig.set[i], ".csv", sep = "")) 
+  dat <- W %*% t(shifts.sample)
+  dat <- t(dat)
+  save(dat, file = paste("./data/TEP/dat/dat",sig.set[i], sep = "")) 
 }

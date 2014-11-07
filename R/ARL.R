@@ -45,9 +45,9 @@ ControlLimitBNL1 <- function(dataset, df, dag) {
   res.set <- matrix(data=NA, nrow=size, ncol=df.len)
   for (i in 1:size) {
     T2 <- dataset[i,] %*% inv %*% dataset[i,]
-    S2 <- BNL1(ncol(dataset), wei.mat, dataset[i,], df)
+    S2 <- solver(wei.mat, dataset[i,], type = "LASSO-BN")
     for (j in 1:df.len) {
-      res.set[i,j] = T2/2 - S2$obj.val[j]
+      res.set[i,j] = T2 - S2$obj.val[df[j] + 1]
     }
   }
   for (j in 1:df.len) {
@@ -69,9 +69,9 @@ ARLBNL1 <- function(dataset, control, sig, df, dag) {
   if (sig == 0) {
     for (i in 1:size) {
       T2 <- dat[i,] %*% inv %*% dat[i,]
-      S2 <- BNL1(ncol(dataset), wei.mat, dataset[i,], df)
+      S2 <- solver(wei.mat, dataset[i,], type = "LASSO-BN")
       for (j in 1:df.len) {
-        res <- T2/2 - S2$obj.val[j]  
+        res <- T2 - S2$obj.val[df[j] + 1]  
         if (res > control[j]) err.num[j] <- err.num[j] + 1
       }
     }
@@ -79,9 +79,9 @@ ARLBNL1 <- function(dataset, control, sig, df, dag) {
   } else if (sig > 0) {
     for (i in 1:size) {
       T2 <- dat[i,] %*% inv %*% dat[i,]
-      S2 <- BNL1(ncol(dataset), wei.mat, dataset[i,], df)
+      S2 <- solver(wei.mat, dataset[i,], type = "LASSO-BN")
       for (j in 1:df.len) {
-        res <- T2/2 - S2$obj.val[j]  
+        res <- T2 - S2$obj.val[df[j] + 1] # because first row is df 0  
         if (res <= control[j]) err.num[j] <- err.num[j] + 1
       }
     }

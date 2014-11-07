@@ -1,4 +1,4 @@
-solver <- function(wei, yt, df, type = c("LASSO-BN", "VS-MSPC")) {
+solver <- function(wei, yt, df = 0, type = c("LASSO-BN", "VS-MSPC")) {
   num <- dim(wei)[1]
   y <- solve(wei) %*% yt
   X <- diag(num)
@@ -10,7 +10,7 @@ solver <- function(wei, yt, df, type = c("LASSO-BN", "VS-MSPC")) {
     stop("Wrong Type!")
   }
   
-  fit <- genlasso(y, X, D, maxsteps = 50) # our df is always less than 50
+  fit <- genlasso(y, X, D) # our df is always less than 50
   
   beta <- coef.genlasso(fit, df = df)$beta
   beta <- abs(beta)
@@ -18,6 +18,12 @@ solver <- function(wei, yt, df, type = c("LASSO-BN", "VS-MSPC")) {
   coef <- rep(0, num)
   coef[posi[1:df]] = 1
 
-  obj <- summary(fit)[df,"rss"]
+  obj <- summary(fit)[,"rss"]
   return(list(obj.val = obj, coef.set = coef))
 }
+
+############## test code ################
+load("./data/TEP/weighM")
+load("./data/TEP/dat/shifts")
+load("./data/TEP/dat/dat0.5")
+fit <- solver(W, dat[1,], 2, "LASSO-BN")
