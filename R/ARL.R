@@ -1,3 +1,5 @@
+# ARL0 = 1/alpha
+# ARL1 = 1/(1-beta)
 ControlLimitT2 <- function(dataset) {
   kIteration <- 10000
   cov <- cov(dataset)  

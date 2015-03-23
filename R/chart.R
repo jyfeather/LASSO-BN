@@ -23,7 +23,7 @@ solver <- function(wei, yt, df = 0, type = c("LASSO-BN", "VS-MSPC")) {
 }
 
 ############## test code ################
-load("./data/TEP/weighM")
-load("./data/TEP/dat/shifts")
-load("./data/TEP/dat/dat0.5")
-fit <- solver(W, dat[1,], 2, "LASSO-BN")
+#load("./data/TEP/weighM")
+#load("./data/TEP/dat/shifts")
+#load("./data/TEP/dat/dat0.5")
+#fit <- solver(W, dat[1,], 2, "LASSO-BN")
