@@ -38,19 +38,19 @@ ARLT2 <- function(dataset, control, sig) {
   return(ARL)
 }
 
-ControlLimitBNL1 <- function(dataset, df, dag) {
+ControlLimitBNL1 <- function(dataset, df, wei) {
   size <- nrow(dataset)  
-  cov <- trueCov(dag) # true covariance matrix 
-  inv <- solve(cov)
-  wei.mat <- t(chol(cov)) # true weight matrix
   df.len <- length(df)
   res.set <- matrix(data=NA, nrow=size, ncol=df.len)
   for (i in 1:size) {
     T2 <- dataset[i,] %*% inv %*% dataset[i,]
-    S2 <- solver(wei.mat, dataset[i,], type = "LASSO-BN")
-    for (j in 1:df.len) {
-      res.set[i,j] = T2 - S2$obj.val[df[j] + 1]
-    }
+    # solve S2
+    common <- diag(ncol(dataset)) # (x^Tx)^-1x^T
+    least <- common %*% dataset[i,]
+    lambdas <- sort(abs(least), decreasing = T)$x[df+1]
+
+
+
   }
   for (j in 1:df.len) {
     res.set[,j] <- sort(res.set[,j])

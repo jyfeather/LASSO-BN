@@ -1,28 +1,43 @@
 rm(list = ls())
 
-setwd("C:/Users/JIN/Documents/GitHub/LASSO-BN")
+library(pcalg)
+set.seed(2015)
 
-## Import packages
-require("pcalg")      # Causal network
-require("genlasso")   # Lasso solver
-
-source("./R/chart.R")
-source("./R/ARL.R")
-
-set.seed(2014)
-
-node.num.set <- c(30, 60, 100) # Amount of nodes in BN
-var.net <- 2 # 1, 2, 3
+node.num.set <- c(30, 50, 100) # Amount of nodes in BN
 kIteration <- 10000 # if ARL = 200, type I error number is 10000/200 = 50
 sig.set <- c(0.5, 1, 2, 4) # Mean shift magnitude
-var.df <- c(1, 2, 3, 4, 5, 6, 7, 8, 9, node.num.set[var.net]/2, node.num.set[var.net]-1) # guessed amount of mean shift vars
+var.df <- c(2, 3, 4, 5) # guessed amount of mean shift vars
 
-load(paste("./data/Simu/dat/dat", node.num.set[var.net], 0, sep="_"))
-load(paste("./data/Simu/bn/bn", node.num.set[var.net], sep=""))
-#control.limit <- ControlLimitBNL1(dat, var.df, bn.dag)
-control.limit <- c(10.40094, 13.78475, 16.62168, 19.16862, 21.78490, 24.54558, 26.74896, 28.92770, 31.69569, 66.83572, 90.57255)
+## control limit, ARL0
+load(paste("./dat/simu/dat", node.num.set[1], 0, sep="_"))
+load(paste("./dat/simu/bn", node.num.set[1], sep=""))
+load(paste("./dat/simu/weighM", node.num.set[1], sep="_"))
+
+size <- nrow(dat)  
+df.len <- length(var.df)
+res.set <- matrix(data=NA, nrow=size, ncol=df.len)
+inv <- solve(trueCov(bn.dag))
+for (i in 1:size) {
+  T2 <- dat[i,] %*% inv %*% dat[i,]
+  # solve S2
+  common <- diag(ncol(dat)) # (x^Tx)^-1x^T
+  least <- common %*% dat[i,]
+  lambdas <- sort(abs(least), decreasing = T)[var.df+1]
+  for (j in 1:length(var.df)) {
+    beta <- sign(least)*((abs(least)-lambdas[j]) * ((abs(least)-lambdas[1])>0))
+    S2 <- sum((solve(W) %*% dat[i,] - beta)^2) + lambdas[j]*sum(abs(beta))
+    res.set[i,j] <- T2 -S2
+  }
+}
+for (j in 1:df.len) {
+  res.set[,j] <- sort(res.set[,j])
+}
+kARL0 = 200
+flag <- size - size / kARL0 
+res.set[flag,] 
 rm(dat)
 
+## out of control to ARL1
 ARLs <- matrix(data=NA, nrow=length(sig.set), ncol=length(var.df))
 for (i in 1:length(sig.set)) {
   filename <- paste("./data/Simu/dat/dat", node.num.set[var.net], sig.set[i], sep="_")
