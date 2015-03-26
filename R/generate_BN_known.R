@@ -1,9 +1,8 @@
 rm(list = ls())
 
-setwd("C:/Users/JIN/Documents/GitHub/LASSO-BN")
 
 library(bnlearn)
-library(Rgraphviz)
+library(igraph)
 library(MASS)
 
 # Create the Bayesian network structure
@@ -13,10 +12,11 @@ bn.struct = model2network("[F1][F2][F3][F4][F19][F10|F1:F2:F3:F4][J20|F10][F5|J2
                    [F14|P13][F17|F14][L15|F17][P16|L15:F19][T18|P16:F19]")
 
 #plot(bn, highlight = c("F5", mb(bn, "F5")))
-graphviz.plot(bn.struct)
+g <- igraph.from.graphNEL(as.graphNEL(bn.struct))
+plot(g, layout = ly)
 
 # Estimate the Bayesian network parameters
-inputMat <- read.table("./data/TEP/incontrol.csv", header = T)
+inputMat <- read.table("./dat/real/incontrol.csv", header = T)
 inputMat <- as.data.frame(scale(inputMat))
 nodeName <- colnames(inputMat)
 nodeSymb <- c("F1", "F2", "F3", "F4", "F5", "F6",
@@ -46,23 +46,25 @@ for (i in 1:numNode) {
 }
 omega[is.na(omega)] <- 0
 W <- solve(diag(numNode) - omega) # causal effect matrix
-save(W, file = "./data/TEP/weighM")
+save(W, file = "./dat/real/weighM")
 
 # shift positions
-shifts <- rep(0, numNode)
-shifts.pos <- sample(1:numNode, 3) # 3 shifts
-save(shifts.pos, file = "./data/TEP/dat/shifts") 
+shifts.pos <- c(1,3,5)
+save(shifts.pos, file = "./dat/real/shifts") 
 
 # Step 2
-sig.set <- c(0.1, 0.3, 0.5, 0.7, 0.9, 1.5)
+sig.set <- c(0.1, 0.3, 0.5, 0.7, 1, 1.5)
 for (i in 1:length(sig.set)) {
-  shifts[shifts.pos] <- sig.set[i]
-  shifts.sigma <- diag(numNode) # identitiy covariance matrix
-  numSample <- 10000 # sample size
-  shifts.sample <- mvrnorm(n = numSample, mu = shifts, Sigma = shifts.sigma)
-  
-  # Step 3
-  dat <- W %*% t(shifts.sample)
-  dat <- t(dat)
-  save(dat, file = paste("./data/TEP/dat/dat",sig.set[i], sep = "")) 
+  for (j in 1:length(shifts.pos)) {
+    shifts <- rep(0, numNode)
+    shifts[shifts.pos[j]] <- sig.set[i]
+    shifts.sigma <- diag(numNode) # identitiy covariance matrix
+    numSample <- 10000 # sample size
+    shifts.sample <- mvrnorm(n = numSample, mu = shifts, Sigma = shifts.sigma)
+    
+    # Step 3
+    dat <- W %*% t(shifts.sample)
+    dat <- t(dat)
+    save(dat, file = paste("./dat/real/dat",sig.set[i], shifts.pos[j], sep = "_"))   
+  }
 }

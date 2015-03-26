@@ -7,7 +7,7 @@ require("MASS")
 set.seed(2015)
 
 kIteration <- 10000 
-sig.set <- c(0, 0.1, 0.3, 0.5, 0.7, 0.9, 1, 1.5) # Mean shift magnitude
+sig.set <- c(0, 0.1, 0.3, 0.5, 0.7, 1, 1.5) # Mean shift magnitude
 kNumShifts <- 3 # Amount of mean shift varibles
 
 ## Generate and save a node number specified random Bayesian Network

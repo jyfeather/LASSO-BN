@@ -1,10 +1,11 @@
 rm(list = ls())
 
 library(pcalg)
+library(genlasso)
 set.seed(2015)
 
 node.num.set <- c(30, 50, 100) # Amount of nodes in BN
-var <- 3
+var <- 3 
 kIteration <- 10000 # if ARL = 200, type I error number is 10000/200 = 50
 sig.set <- c(0, 0.1, 0.3, 0.5, 0.7, 1, 1.5) # Mean shift magnitude
 var.df <- c(2, 3, 4, 5) # guessed amount of mean shift vars
@@ -19,16 +20,14 @@ inv <- solve(trueCov(bn.dag))
 load(paste("./dat/simu/dat", node.num.set[var], 0, sep="_"))
 size <- nrow(dat)  
 res.set <- matrix(data=NA, nrow=size, ncol=df.len)
+X <- solve(W)
 for (i in 1:size) {
-  T2 <- dat[i,] %*% inv %*% dat[i,]
-  # solve S2
-  left <- diag(ncol(dat)) # (x^Tx)^-1x^T
-  y <- solve(W) %*% dat[i,]
-  least <- left %*% y
-  lambdas <- sort(abs(least), decreasing = T)[var.df+1]
+  T2 <- dat[i,] %*% inv %*% dat[i,]  
+  y <- X %*% dat[i,]
+  fit <- genlasso(y, X, diag(node.num.set[var])/2)
   for (j in 1:length(var.df)) {
-    beta <- sign(least)*((abs(least)-lambdas[j]) * ((abs(least)-lambdas[1])>0))
-    S2 <- sum((y - beta)^2) + lambdas[j]*sum(abs(beta))
+    beta <- round(fit$beta[,var.df[j]+1], digits = 3)
+    S2 <- sum((y - X %*% beta)^2) #+ fit$lambda[var.df[j]+1]*sum(abs(beta))
     res.set[i,j] <- T2 -S2
   }
 }
@@ -38,7 +37,7 @@ for (j in 1:df.len) {
 kARL0 = 200
 flag <- size - size / kARL0 
 cl <- res.set[flag,] 
-rm(dat, res.set, T2, left, y, least, lambdas, beta, S2, kARL0, flag)
+rm(dat, res.set, T2, y, fit, S2, kARL0, flag)
 
 ## out of control to ARL1
 ARLs <- matrix(data=NA, nrow=length(sig.set), ncol=length(var.df))
@@ -46,20 +45,20 @@ for (i in 2:length(sig.set)) {
   load(paste("./dat/simu/dat", node.num.set[var], sig.set[i], sep="_"))
   size <- nrow(dat)
   err.num <- rep(0, df.len)
+  X <- solve(W)
   for (j in 1:size) {
     T2 <- dat[j,] %*% inv %*% dat[j,]
     # solve S2
-    left <- diag(ncol(dat)) # (x^Tx)^-1x^T
-    y <- solve(W) %*% dat[j,]
-    least <- left %*% y
-    lambdas <- sort(abs(least), decreasing = T)[var.df+1]
+    y <- X %*% dat[j,]
+    fit <- genlasso(y, X, diag(node.num.set[var])/2)
     for (k in 1:length(var.df)) {
-      beta <- sign(least)*((abs(least)-lambdas[k]) * ((abs(least)-lambdas[1])>0))
-      S2 <- sum((y - beta)^2) + lambdas[k]*sum(abs(beta))
+      beta <- round(fit$beta[,var.df[k]+1], digits = 3)
+      S2 <- sum((y - X %*% beta)^2) #+ fit$lambda[var.df[k]+1]*sum(abs(beta))
       if ((T2-S2)<cl[k]) err.num[k] <- err.num[k] + 1
     }
   }
   ARLs[i,] = size/(size-err.num)
+  print(i)
 }
 ARLs[1,] <- rep(200, df.len)
 write.csv(ARLs, file = "./dat/ARL.csv")
