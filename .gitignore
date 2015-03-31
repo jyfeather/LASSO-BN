@@ -11,4 +11,5 @@
 .Rproj.user/
 
 # Data files
-dat/
+dat/real/
+dat/simu/
