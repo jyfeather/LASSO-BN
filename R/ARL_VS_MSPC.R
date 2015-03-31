@@ -5,19 +5,18 @@ library(genlasso)
 set.seed(2015)
 
 node.num.set <- c(30, 50, 100) # Amount of nodes in BN
-var <- 3 
+var <- 1 
 kIteration <- 10000 # if ARL = 200, type I error number is 10000/200 = 50
 sig.set <- c(0, 0.1, 0.3, 0.5, 0.7, 1, 1.5) # Mean shift magnitude
 var.df <- c(2, 3, 4, 5) # guessed amount of mean shift vars
 
-load(paste("./dat/simu/bn", node.num.set[var], sep=""))
 load(paste("./dat/simu/weighM", node.num.set[var], sep="_"))
 
 df.len <- length(var.df)
-inv <- solve(trueCov(bn.dag))
 
 ## control limit, ARL0
 load(paste("./dat/simu/dat", node.num.set[var], 0, sep="_"))
+inv <- solve(cov(dat))
 size <- nrow(dat)  
 res.set <- matrix(data=NA, nrow=size, ncol=df.len)
 X <- solve(W)
@@ -43,6 +42,7 @@ rm(dat, res.set, T2, y, fit, S2, kARL0, flag)
 ARLs <- matrix(data=NA, nrow=length(sig.set), ncol=length(var.df))
 for (i in 2:length(sig.set)) {
   load(paste("./dat/simu/dat", node.num.set[var], sig.set[i], sep="_"))
+  inv <- solve(cov(dat))
   size <- nrow(dat)
   err.num <- rep(0, df.len)
   X <- solve(W)

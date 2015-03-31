@@ -13,10 +13,11 @@ load(paste("./dat/simu/bn", node.num.set[var], sep=""))
 load(paste("./dat/simu/weighM", node.num.set[var], sep="_"))
 
 df.len <- length(var.df)
-inv <- solve(trueCov(bn.dag))
 
 ## control limit, ARL0
 load(paste("./dat/simu/dat", node.num.set[var], 0, sep="_"))
+dat <- dat[1:1000,]
+inv <- solve(cov(dat))
 size <- nrow(dat)  
 res.set <- vector(mode = "numeric", length = size)
 for (i in 1:size) {
@@ -27,12 +28,14 @@ res.set <- sort(res.set)
 kARL0 = 200
 flag <- size - size / kARL0 
 cl <- res.set[flag] 
-rm(dat, res.set, T2, kARL0, flag)
+rm(dat, res.set, T2, kARL0, flag, inv)
 
 ## out of control to ARL1
 ARLs <- vector(mode = "numeric", length = length(sig.set))
 for (i in 2:length(sig.set)) {
   load(paste("./dat/simu/dat", node.num.set[var], sig.set[i], sep="_"))
+  dat <- dat[1:5000,]
+  inv <- solve(cov(dat))
   size <- nrow(dat)
   err.num <- 0 
   for (j in 1:size) {

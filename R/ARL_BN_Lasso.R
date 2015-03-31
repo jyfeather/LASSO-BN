@@ -4,7 +4,7 @@ library(pcalg)
 set.seed(2015)
 
 node.num.set <- c(30, 50, 100) # Amount of nodes in BN
-var <- 3
+var <- 2
 kIteration <- 10000 # if ARL = 200, type I error number is 10000/200 = 50
 sig.set <- c(0, 0.1, 0.3, 0.5, 0.7, 1, 1.5) # Mean shift magnitude
 var.df <- c(2, 3, 4, 5) # guessed amount of mean shift vars
@@ -28,7 +28,7 @@ for (i in 1:size) {
   lambdas <- sort(abs(least), decreasing = T)[var.df+1]
   for (j in 1:length(var.df)) {
     beta <- sign(least)*((abs(least)-lambdas[j]) * ((abs(least)-lambdas[1])>0))
-    S2 <- sum((y - beta)^2) + lambdas[j]*sum(abs(beta))
+    S2 <- sum((y - beta)^2) #+ lambdas[j]*sum(abs(beta))
     res.set[i,j] <- T2 -S2
   }
 }
@@ -55,7 +55,7 @@ for (i in 2:length(sig.set)) {
     lambdas <- sort(abs(least), decreasing = T)[var.df+1]
     for (k in 1:length(var.df)) {
       beta <- sign(least)*((abs(least)-lambdas[k]) * ((abs(least)-lambdas[1])>0))
-      S2 <- sum((y - beta)^2) + lambdas[k]*sum(abs(beta))
+      S2 <- sum((y - beta)^2) #+ lambdas[k]*sum(abs(beta))
       if ((T2-S2)<cl[k]) err.num[k] <- err.num[k] + 1
     }
   }

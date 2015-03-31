@@ -12,7 +12,6 @@ kNumShifts <- 3 # Amount of mean shift varibles
 
 ## Generate and save a node number specified random Bayesian Network
 node.num.set <- c(30, 50, 100) # Amount of nodes in BN
-#edge.num.set <- c(0.15, 0.07, 0.04) # Related to number of arcs For ARL
 edge.num.set <- c(0.3, 0.2, 0.05) # Related to number of arcs For AUC 
 for (i in 1:length(node.num.set)) {
   bn.dag <- randomDAG(n = node.num.set[i], prob = edge.num.set[i])  
