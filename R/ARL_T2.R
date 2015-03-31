@@ -16,7 +16,6 @@ df.len <- length(var.df)
 
 ## control limit, ARL0
 load(paste("./dat/simu/dat", node.num.set[var], 0, sep="_"))
-dat <- dat[1:1000,]
 inv <- solve(cov(dat))
 size <- nrow(dat)  
 res.set <- vector(mode = "numeric", length = size)
@@ -34,7 +33,6 @@ rm(dat, res.set, T2, kARL0, flag, inv)
 ARLs <- vector(mode = "numeric", length = length(sig.set))
 for (i in 2:length(sig.set)) {
   load(paste("./dat/simu/dat", node.num.set[var], sig.set[i], sep="_"))
-  dat <- dat[1:5000,]
   inv <- solve(cov(dat))
   size <- nrow(dat)
   err.num <- 0 
