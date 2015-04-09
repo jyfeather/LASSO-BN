@@ -1,5 +1,6 @@
 require(mvtnorm)
 require(reshape2)
+require(ggplot2)
 mean=c(0,1)
 sigma=cbind(c(1, 0),c(0, 1))
 
@@ -18,7 +19,9 @@ mz$intensity<-round(mz$z*1000)
 
 g1 <- ggplot(mz, aes(x,y)) + 
   geom_contour(aes(z=z),colour="black") + 
-  theme_bw() + xlab(expression(z[1])) + ylab(expression(z[2])) +
+  theme_bw() + xlab(expression(z[t1])) + ylab(expression(z[t2])) +
   ggtitle(expression(paste(b[1]==0, ",", b[2]==1))) +
+  scale_x_continuous(limits = c(-2, 2)) +
+  scale_y_continuous(limits = c(-2, 2)) +
   theme(axis.title = element_text(size=15), title = element_text(size=13))
 plot(g1)
