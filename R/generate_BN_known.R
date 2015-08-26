@@ -4,6 +4,7 @@ rm(list = ls())
 library(bnlearn)
 library(igraph)
 library(MASS)
+library(graph)
 
 # Create the Bayesian network structure
 # BN structure based on Mississippi Eastman Process
@@ -13,7 +14,7 @@ bn.struct = model2network("[F1][F2][F3][F4][F19][F10|F1:F2:F3:F4][J20|F10][F5|J2
 
 #plot(bn, highlight = c("F5", mb(bn, "F5")))
 g <- igraph.from.graphNEL(as.graphNEL(bn.struct))
-plot(g, layout = ly)
+plot(g)
 
 # Estimate the Bayesian network parameters
 inputMat <- read.table("./dat/real/incontrol.csv", header = T)
