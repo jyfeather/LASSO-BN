@@ -33,13 +33,14 @@ scene.true <- rbind(scene.true, t(combn(5,4,tabulate,nbins=5)))
 scene.true <- rbind(scene.true, t(combn(5,5,tabulate,nbins=5)))
 
 sig <- 3 # mean shift scale
-M <- 10000 # number of sample
+M <- 5000 # number of sample
 
 ###################### out of control ###########################
 library(Matrix)
 library(genlasso)
 
-type <- "VS-MSPC"
+#type <- "VS-MSPC"
+type <- "LASSO-BN"
 scene.actual <- matrix(0, nrow = numScene, ncol = numNode)
 i <- 2
 while (i <= numScene) {
@@ -47,8 +48,9 @@ while (i <= numScene) {
   emat <- mvrnorm(n = M, mu = scene.true[i,]*sig, Sigma = diag(numNode))
   dat <- t(W %*% t(emat))
 
-  guessNum <- nnzero(scene.true[i,]) # guess number of mean shift valuables
-  if (guessNum == 5) guessNum <- 4
+  #guessNum <- nnzero(scene.true[i,]) # guess number of mean shift valuables
+  #if (guessNum == 5) guessNum <- 4
+  guessNum <- 2
   
   if (type == "LASSO-BN") {
     tmp.coef <- matrix(0, nrow = numNode, ncol = M)
@@ -93,16 +95,17 @@ err1.causationT2 <- rowSums(scene.err1 * err.causationT2) / rowSums(scene.err1)
 err1.MTY <- rowSums(scene.err1 * err.MTY) / rowSums(scene.err1)
 err1.LassoBN <- rowSums(scene.err1 * err.LassoBN) / rowSums(scene.err1)
 err1.VSMSPC <- rowSums(scene.err1 * err.VSMSPC) / rowSums(scene.err1)
-err1 <- cbind(err1.LassoBN, err1.VSMSPC, err1.causationT2)
+err1 <- cbind(err1.LassoBN, err1.causationT2)
+#err1[31,] <- 0
 
 err2.causationT2 <- rowSums(scene.err2 * err.causationT2) / rowSums(scene.err2)
 err2.MTY <- rowSums(scene.err2 * err.MTY) / rowSums(scene.err2)
 err2.LassoBN <- rowSums(scene.err2 * err.LassoBN) / rowSums(scene.err2)
 err2.VSMSPC <- rowSums(scene.err2 * err.VSMSPC) / rowSums(scene.err2)
-err2 <- cbind(err2.LassoBN, err2.VSMSPC, err2.causationT2)
+err2 <- cbind(err2.LassoBN, err2.causationT2)
 
 par(mfrow=c(1,2))
-matplot(err1[-31,], type = c("l"), pch = 1, col = 1, ylab = "false positive rate")
-legend("topright", c("LASSO-BN", "VS-MSPC", "Causation-based T2"), lty = c(1,2,3))
-matplot(err2[-31,], type = c("l"), pch = 1, col = 1, ylab = "false negative rate")
-legend("topright", c("LASSO-BN", "VS-MSPC", "Causation-based T2"), lty = c(1,2,3))
+matplot(err1, type = c("l"), pch = 1, col = 1, ylab = "false positive rate")
+legend("topright", c("LASSO-BN", "Causation-based T2"), lty = c(1,2,3))
+matplot(err2, type = c("l"), pch = 1, col = 1, ylab = "false negative rate")
+legend("topright", c("LASSO-BN", "Causation-based T2"), lty = c(1,2,3))
